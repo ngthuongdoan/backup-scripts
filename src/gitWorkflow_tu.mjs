@@ -9,7 +9,7 @@ import ora from "ora"
 const red = chalk.red
 const green = chalk.green
 const yellow = chalk.yellow
-const EDDIE_SPACE_ID = "<users/111394960770002739899>"
+const TU_SPACE_ID = "<users/106835696436895216834>"
 const TUNG_SPACE_ID = "<users/109196398756093781275>"
 const assigneeIdCommand = "git config --global user.id"
 const tokenCommand = "git config --global user.token"
@@ -20,13 +20,14 @@ let token,
 	currentBranch,
 	targetBranch = "main"
 const reviewerIds = "39"
-const BASE_PATH = "/Users/eddiedoan/job/code/hhg"
+const BASE_PATH = "/Users/eddiedoan/job/code/hhg" //EDIT THIS
 
 const WEBHOOK_DEV =
 	"https://chat.googleapis.com/v1/spaces/mpE594AAAAE/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=cy9G5FnoL2RK9ZJZ38k_fBMMxbX2354OqguLCvCKcM8%3D"
 const WEBHOOK_PROD =
 	"https://chat.googleapis.com/v1/spaces/AAAAg__fvcA/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=ljGOgxI13FRvs3E2wekNjE0uoGBzuk8NOIYBdlyVj1U%3D"
 const HHG_PROJECT_IDS = {
+	MarryBaby: { id: 38, path: BASE_PATH + "/hhg-marybaby-fe" },
 	Discover: { id: 98, path: BASE_PATH + "/hhg-discover-fe" },
 	Component: { id: 35, path: BASE_PATH + "/hhg-components" },
 }
