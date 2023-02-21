@@ -2,34 +2,32 @@
 import { exec } from "child_process"
 
 import axios from "axios"
-import chalk from "chalk"
 import inquirer from "inquirer"
 import ora from "ora"
+import {
+	BASE_PATH,
+	EDDIE_SPACE_ID,
+	HHG_PROJECT_IDS,
+	HUYEN_SPACE_ID,
+	JIRA_DASHBOARD,
+	TUNG_SPACE_ID,
+	WEBHOOK_DEV,
+	WEBHOOK_PROD,
+	assigneeIdCommand,
+	currentBranchCommand,
+	green,
+	tokenCommand,
+	yellow,
+	red,
+	reviewerIds,
+} from "./constant/index.mjs"
 
-const red = chalk.red
-const green = chalk.green
-const yellow = chalk.yellow
-const EDDIE_SPACE_ID = "<users/111394960770002739899>"
-const TUNG_SPACE_ID = "<users/109196398756093781275>"
-const assigneeIdCommand = "git config --global user.id"
-const tokenCommand = "git config --global user.token"
-const currentBranchCommand = "git symbolic-ref --short HEAD"
 let token,
 	assigneeId,
 	commitMessage,
 	currentBranch,
+	jiraLink,
 	targetBranch = "main"
-const reviewerIds = "39"
-const BASE_PATH = "/Users/eddiedoan/job/code/hhg"
-
-const WEBHOOK_DEV =
-	"https://chat.googleapis.com/v1/spaces/mpE594AAAAE/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=cy9G5FnoL2RK9ZJZ38k_fBMMxbX2354OqguLCvCKcM8%3D"
-const WEBHOOK_PROD =
-	"https://chat.googleapis.com/v1/spaces/AAAAg__fvcA/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=ljGOgxI13FRvs3E2wekNjE0uoGBzuk8NOIYBdlyVj1U%3D"
-const HHG_PROJECT_IDS = {
-	Discover: { id: 98, path: BASE_PATH + "/hhg-discover-fe" },
-	Component: { id: 35, path: BASE_PATH + "/hhg-components" },
-}
 let projectName = "Discover"
 let projectId = HHG_PROJECT_IDS.Discover.id
 
@@ -85,11 +83,10 @@ const chooseProject = async () => {
 			default: HHG_PROJECT_IDS.Discover.id,
 		},
 	])
-	projectName = answers.project
 	const { id, path } = HHG_PROJECT_IDS[answers.project]
 	console.log(yellow("Change Directory..."))
 	process.chdir(path)
-	return id
+	return { id, name: answers.project }
 }
 
 const getTargetBranch = async () => {
@@ -101,30 +98,30 @@ const getTargetBranch = async () => {
 			default: "main",
 		},
 	])
-	targetBranch = answers.targetBranch
 	await execPromise(
-		`git pull origin ${targetBranch}`,
+		`git pull origin ${answers.targetBranch}`,
 		true,
 		"Updating the local branch with changes from the remote repository..."
 	)
+	return answers.targetBranch
 }
 
 const getCurrentBranch = async () => {
+	const answers = await inquirer.prompt([
+		{
+			type: "input",
+			name: "branchName",
+			message: `Enter branch name (default is ${currentBranch}):`,
+			default: currentBranch,
+		},
+	])
+	console.log(yellow("Checking out a new branch..."))
 	try {
-		const answers = await inquirer.prompt([
-			{
-				type: "input",
-				name: "branchName",
-				message: `Enter branch name (default is ${currentBranch}):`,
-				default: currentBranch,
-			},
-		])
-		currentBranch = answers.branchName
-		console.log(yellow("Checking out a new branch..."))
 		await execPromise(`git checkout -b ${answers.branchName}`)
 	} catch (e) {
 	} finally {
 		await execPromise("git add .")
+		return answers.branchName
 	}
 }
 
@@ -136,8 +133,12 @@ const getCommitMessage = async () => {
 			message: `Enter commit message: `,
 		},
 	])
-	commitMessage = answers.message
-	await execPromise(`git commit -m "${commitMessage}"`, true, "Committing ...")
+	await execPromise(
+		`git commit -m "${answers.message}"`,
+		true,
+		"Committing ..."
+	)
+	return answers.message
 }
 
 async function checkMergeRequestExisted() {
@@ -197,6 +198,31 @@ const createMergeRequest = async () => {
 	return response?.data?.web_url
 }
 
+const attachJiraTicket = async () => {
+	const answers = await inquirer.prompt([
+		{
+			type: "confirm",
+			name: "attachTicket",
+			message: "Do you want to attach a JIRA ticket?",
+			default: false,
+		},
+	])
+	if (!answers.attachTicket) {
+		console.log("No Attach...")
+		return null
+	}
+	console.log(yellow("Opening JIRA Dashboard..."))
+	await execPromise(`open ${JIRA_DASHBOARD}`)
+	const answerLink = await inquirer.prompt([
+		{
+			type: "input",
+			name: "jiraLink",
+			message: `Enter JIRA link: `,
+		},
+	])
+	return answerLink.jiraLink
+}
+
 const sendMessageToGoogleChat = async (url) => {
 	const answers = await inquirer.prompt([
 		{
@@ -207,8 +233,39 @@ const sendMessageToGoogleChat = async (url) => {
 		},
 	])
 
+	const buttonList = jiraLink
+		? [
+				{
+					text: "View Merge Request",
+					onClick: {
+						openLink: {
+							url,
+						},
+					},
+				},
+				{
+					text: "View JIRA Ticket",
+					onClick: {
+						openLink: {
+							url: jiraLink,
+						},
+					},
+				},
+		  ]
+		: [
+				{
+					text: "View Merge Request",
+					onClick: {
+						openLink: {
+							url,
+						},
+					},
+				},
+		  ]
 	const cardContent = {
-		text: `${answers.message} ${TUNG_SPACE_ID}`,
+		text: `${answers.message} ${TUNG_SPACE_ID} ${
+			jiraLink ? HUYEN_SPACE_ID : ""
+		}`,
 		thread: {
 			name: "spaces/AAAAg__fvcA/threads/AA9RzkvctLE",
 		},
@@ -246,16 +303,7 @@ const sendMessageToGoogleChat = async (url) => {
 								},
 								{
 									buttonList: {
-										buttons: [
-											{
-												text: "View Merge Request",
-												onClick: {
-													openLink: {
-														url,
-													},
-												},
-											},
-										],
+										buttons: buttonList,
 									},
 								},
 							],
@@ -282,7 +330,9 @@ const sendMessageToGoogleChat = async (url) => {
 const main = async () => {
 	try {
 		// Retrieve the user's GitLab ID and API token
-		projectId = await chooseProject()
+		const project = await chooseProject()
+		projectId = project.id
+		projectName = project.name
 		assigneeId = (await execPromise(assigneeIdCommand)).trim()
 		token = (await execPromise(tokenCommand)).trim()
 		// Retrieve the current branch name
@@ -290,14 +340,14 @@ const main = async () => {
 		// Clean up tree
 		await execPromise("git remote prune origin")
 		// Get the target branch name
-		await getTargetBranch()
+		targetBranch = await getTargetBranch()
 		if (!["main", "hotfixes"].includes(targetBranch))
 			throw new Error(
 				"Invalid target branch. Available options are: main, hotfixes."
 			)
 
-		await getCurrentBranch()
-		await getCommitMessage()
+		currentBranch = await getCurrentBranch()
+		commitMessage = await getCommitMessage()
 		console.log(yellow("Pushing the branch to the remote repository..."))
 		await execPromise(`git push -u origin ${currentBranch}`)
 
@@ -315,6 +365,7 @@ const main = async () => {
 			green(`No merge request with target branch ${currentBranch} found.`)
 		)
 		const url = await createMergeRequest()
+		jiraLink = await attachJiraTicket()
 		if (url) {
 			await sendMessageToGoogleChat(url)
 		} else {
