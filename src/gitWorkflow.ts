@@ -1,9 +1,7 @@
 #!/usr/bin/env node
-import { exec } from "child_process"
 
 import axios from "axios"
 import inquirer from "inquirer"
-import ora from "ora"
 import {
 	assigneeIdCommand,
 	currentBranchCommand,
@@ -15,10 +13,11 @@ import {
 	reviewerIds,
 	tokenCommand,
 	TUNG_SPACE_ID,
-	WEBHOOK_DEV,
 	yellow,
-	WEBHOOK_PROD
+	WEBHOOK_PROD,
 } from "./constant/index.js"
+import { execPromise } from "./utils/execPromise.js"
+import { uuidv4 } from "./utils/uuidv4.js"
 
 let token: string,
 	assigneeId: string,
@@ -28,37 +27,6 @@ let token: string,
 	targetBranch = "main"
 let projectName = "Discover"
 let projectId = HHG_PROJECT_IDS.Discover.id
-
-const spinner = ora({
-	spinner: "moon",
-})
-
-function uuidv4() {
-	return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
-		var r = (Math.random() * 16) | 0,
-			v = c == "x" ? r : (r & 0x3) | 0x8
-		return v.toString(16)
-	})
-}
-
-function execPromise(
-	command: string,
-	withSpinner = false,
-	message = "Loading unicorns"
-) {
-	return new Promise<string>((resolve, reject) => {
-		withSpinner && spinner.start(message)
-		exec(command, (error, stdout, stderr) => {
-			if (error) {
-				withSpinner && spinner.fail("To the hell ")
-				reject(error)
-				return
-			}
-			withSpinner && spinner.succeed("To the moon")
-			resolve(stdout ? stdout : stderr)
-		})
-	})
-}
 
 const chooseProject = async () => {
 	const answers = await inquirer.prompt([
@@ -294,7 +262,7 @@ const sendMessageToGoogleChat = async (url: string) => {
 										text: commitMessage,
 										wrapText: true,
 										startIcon: {
-											knownIcon: "BOOKMARK"
+											knownIcon: "BOOKMARK",
 										},
 									},
 								},
@@ -303,7 +271,7 @@ const sendMessageToGoogleChat = async (url: string) => {
 										topLabel: "Environment",
 										text: `merge into ${targetBranch}`,
 										startIcon: {
-											knownIcon: "HOTEL_ROOM_TYPE"
+											knownIcon: "HOTEL_ROOM_TYPE",
 										},
 									},
 								},
@@ -311,11 +279,6 @@ const sendMessageToGoogleChat = async (url: string) => {
 						},
 						{
 							widgets: [
-								{
-									textParagraph: {
-										text: "If the path before you is clear, you're probably on someone else's. - Joseph Campbell",
-									}
-								},
 								{
 									buttonList: {
 										buttons: buttonList,
@@ -338,7 +301,7 @@ const sendMessageToGoogleChat = async (url: string) => {
 
 		console.log(response.data)
 	} catch (error: any) {
-		console.log({error, message: error?.message})
+		console.log({ error, message: error?.message })
 	}
 }
 
