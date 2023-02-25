@@ -16,10 +16,10 @@ export const JIRA_DASHBOARD =
 	"https://hhgdev.atlassian.net/jira/dashboards/10122"
 
 export const WEBHOOK_DEV =
-	"https://chat.googleapis.com/v1/spaces/mpE594AAAAE/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=cy9G5FnoL2RK9ZJZ38k_fBMMxbX2354OqguLCvCKcM8%3D"
+	"https://chat.googleapis.com/v1/spaces/AAAAUTKGleo/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=Qg3mPwLKSIh9tFkE-yzWFUywsstLqA7TGKhn3cdsKhc%3D"
 export const WEBHOOK_PROD =
 	"https://chat.googleapis.com/v1/spaces/AAAAg__fvcA/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=ljGOgxI13FRvs3E2wekNjE0uoGBzuk8NOIYBdlyVj1U%3D"
-export const HHG_PROJECT_IDS = {
+export const HHG_PROJECT_IDS: Record<string, { id: number; path: string }> = {
 	Discover: { id: 98, path: BASE_PATH + "/hhg-discover-fe" },
 	Component: { id: 35, path: BASE_PATH + "/hhg-components" },
 	Together: { id: 45, path: BASE_PATH + "/hhg-together-fe" },

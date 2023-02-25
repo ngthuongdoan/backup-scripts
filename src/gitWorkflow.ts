@@ -5,28 +5,26 @@ import axios from "axios"
 import inquirer from "inquirer"
 import ora from "ora"
 import {
-	BASE_PATH,
-	EDDIE_SPACE_ID,
-	HHG_PROJECT_IDS,
-	HUYEN_SPACE_ID,
-	JIRA_DASHBOARD,
-	TUNG_SPACE_ID,
-	WEBHOOK_DEV,
-	WEBHOOK_PROD,
 	assigneeIdCommand,
 	currentBranchCommand,
 	green,
-	tokenCommand,
-	yellow,
+	HHG_PROJECT_IDS,
+	HUYEN_SPACE_ID,
+	JIRA_DASHBOARD,
 	red,
 	reviewerIds,
-} from "./constant/index.mjs"
+	tokenCommand,
+	TUNG_SPACE_ID,
+	WEBHOOK_DEV,
+	yellow,
+	WEBHOOK_PROD
+} from "./constant/index.js"
 
-let token,
-	assigneeId,
-	commitMessage,
-	currentBranch,
-	jiraLink,
+let token: string,
+	assigneeId: string,
+	commitMessage: string,
+	currentBranch: string,
+	jiraLink: string,
 	targetBranch = "main"
 let projectName = "Discover"
 let projectId = HHG_PROJECT_IDS.Discover.id
@@ -43,23 +41,12 @@ function uuidv4() {
 	})
 }
 
-const rgbToCssColor = function (red, green, blue) {
-	var rgbNumber = new Number((red << 16) | (green << 8) | blue)
-	var hexString = rgbNumber.toString(16)
-	var missingZeros = 6 - hexString.length
-	var resultBuilder = ["#"]
-	for (var i = 0; i < missingZeros; i++) {
-		resultBuilder.push("0")
-	}
-	resultBuilder.push(hexString)
-	return resultBuilder.join("")
-}
 function execPromise(
-	command,
+	command: string,
 	withSpinner = false,
 	message = "Loading unicorns"
 ) {
-	return new Promise((resolve, reject) => {
+	return new Promise<string>((resolve, reject) => {
 		withSpinner && spinner.start(message)
 		exec(command, (error, stdout, stderr) => {
 			if (error) {
@@ -223,7 +210,7 @@ const attachJiraTicket = async () => {
 	return answerLink.jiraLink
 }
 
-const sendMessageToGoogleChat = async (url) => {
+const sendMessageToGoogleChat = async (url: string) => {
 	const answers = await inquirer.prompt([
 		{
 			type: "input",
@@ -242,6 +229,12 @@ const sendMessageToGoogleChat = async (url) => {
 							url,
 						},
 					},
+					color: {
+						red: 235,
+						green: 105,
+						blue: 35,
+						alpha: 1,
+					},
 				},
 				{
 					text: "View JIRA Ticket",
@@ -249,6 +242,12 @@ const sendMessageToGoogleChat = async (url) => {
 						openLink: {
 							url: jiraLink,
 						},
+					},
+					color: {
+						red: 135,
+						green: 135,
+						blue: 135,
+						alpha: 1,
 					},
 				},
 		  ]
@@ -259,6 +258,12 @@ const sendMessageToGoogleChat = async (url) => {
 						openLink: {
 							url,
 						},
+					},
+					color: {
+						red: 235,
+						green: 105,
+						blue: 35,
+						alpha: 1,
 					},
 				},
 		  ]
@@ -276,30 +281,40 @@ const sendMessageToGoogleChat = async (url) => {
 					header: {
 						title: `Merge Request (${projectName})`,
 						imageUrl:
-							"https://images.unsplash.com/photo-1495055154266-57bbdeada43e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2070&q=80",
+							"https://images.unsplash.com/photo-1586458873452-7bdd7401eabd?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2083&q=80",
 						imageType: "CIRCLE",
 						imageAltText: "Avatar for Bot",
 					},
 					sections: [
 						{
-							header: "Info",
 							widgets: [
 								{
 									decoratedText: {
-										startIcon: {
-											knownIcon: "HOTEL_ROOM_TYPE",
-										},
+										topLabel: "Title",
 										text: commitMessage,
 										wrapText: true,
+										startIcon: {
+											knownIcon: "BOOKMARK"
+										},
 									},
 								},
 								{
 									decoratedText: {
-										startIcon: {
-											knownIcon: "MAP_PIN",
-										},
+										topLabel: "Environment",
 										text: `merge into ${targetBranch}`,
+										startIcon: {
+											knownIcon: "HOTEL_ROOM_TYPE"
+										},
 									},
+								},
+							],
+						},
+						{
+							widgets: [
+								{
+									textParagraph: {
+										text: "If the path before you is clear, you're probably on someone else's. - Joseph Campbell",
+									}
 								},
 								{
 									buttonList: {
@@ -322,8 +337,8 @@ const sendMessageToGoogleChat = async (url) => {
 		})
 
 		console.log(response.data)
-	} catch (error) {
-		console.log(error)
+	} catch (error: any) {
+		console.log({error, message: error?.message})
 	}
 }
 

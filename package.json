@@ -3,11 +3,13 @@
 	"version": "1.0.0",
 	"description": "",
 	"main": "index.js",
+	"type": "module",
 	"scripts": {
-		"gitlab": "node ./src/gitWorkflow.mjs"
+		"build": "tsc",
+		"gitlab": "ts-node --esm ./src/gitWorkflow.ts"
 	},
 	"bin": {
-		"gitlab": "./src/gitWorkflow.mjs"
+		"gitlab": "./bin/gitWorkflow.js"
 	},
 	"author": "",
 	"license": "ISC",
@@ -16,5 +18,11 @@
 		"chalk": "4",
 		"inquirer": "8",
 		"ora": "^6.1.2"
+	},
+	"devDependencies": {
+		"@types/inquirer": "^9.0.3",
+		"@types/node": "^18.14.1",
+		"ts-node": "^10.9.1",
+		"typescript": "^4.9.5"
 	}
 }
