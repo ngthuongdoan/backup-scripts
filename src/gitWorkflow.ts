@@ -15,6 +15,7 @@ import {
 	TUNG_SPACE_ID,
 	yellow,
 	WEBHOOK_PROD,
+	PLATFORM,
 } from "./constant/index.js"
 import { execPromise } from "./utils/execPromise.js"
 import { uuidv4 } from "./utils/uuidv4.js"
@@ -167,7 +168,11 @@ const attachJiraTicket = async () => {
 		return null
 	}
 	console.log(yellow("Opening JIRA Dashboard..."))
-	await execPromise(`open ${JIRA_DASHBOARD}`)
+	if (PLATFORM === "win32") {
+		await execPromise(`start ${JIRA_DASHBOARD}`)
+	} else {
+		await execPromise(`open ${JIRA_DASHBOARD}`)
+	}
 	const answerLink = await inquirer.prompt([
 		{
 			type: "input",
@@ -198,9 +203,9 @@ const sendMessageToGoogleChat = async (url: string) => {
 						},
 					},
 					color: {
-						red: 235,
-						green: 105,
-						blue: 35,
+						red: 21,
+						green: 151,
+						blue: 221,
 						alpha: 1,
 					},
 				},
@@ -212,9 +217,9 @@ const sendMessageToGoogleChat = async (url: string) => {
 						},
 					},
 					color: {
-						red: 135,
-						green: 135,
-						blue: 135,
+						red: 121,
+						green: 121,
+						blue: 121,
 						alpha: 1,
 					},
 				},
@@ -228,9 +233,9 @@ const sendMessageToGoogleChat = async (url: string) => {
 						},
 					},
 					color: {
-						red: 235,
-						green: 105,
-						blue: 35,
+						red: 21,
+						green: 151,
+						blue: 221,
 						alpha: 1,
 					},
 				},

@@ -1,4 +1,5 @@
 import chalk from "chalk"
+import os from "os"
 
 export const red = chalk.red
 export const green = chalk.green
@@ -24,3 +25,5 @@ export const HHG_PROJECT_IDS: Record<string, { id: number; path: string }> = {
 	Component: { id: 35, path: BASE_PATH + "/hhg-components" },
 	Together: { id: 45, path: BASE_PATH + "/hhg-together-fe" },
 }
+
+export const PLATFORM = os.platform()
